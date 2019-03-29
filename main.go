@@ -39,7 +39,7 @@ func main() {
 	display := createInitialDisplay(wordToGuess)
 	tm.Println(wordToGuess)
 	var warnings []string
-	guessedChars := []rune{}
+	guessedChars := map[rune]struct{}{}
 
 	for attempts := 0; attempts < maxAttempts && strings.Join(display, "") != wordToGuess; {
 		attemptsLeft := maxAttempts - attempts
@@ -51,8 +51,12 @@ func main() {
 			warnings = []string{"Invalid input. Please enter a letter."}
 			continue
 		}
+                if _, ok := guessedChars[guess]; ok {
+                        warnings = []string{"Letter already guessed. Try again."}
+                        continue
+                }
 		warnings = []string{}
-		guessedChars = append(guessedChars, guess)
+		guessedChars[guess] = struct{}{}
 		attempts++
 		for _, g := range positionMap[guess] {
 			display[g] = string(wordToGuess[g])
@@ -76,7 +80,7 @@ func endGame(word string, display []string) {
 	tm.Flush()
 }
 
-func updateTerminal(displayWord string, attemptsLeft int, guessedChars []rune, displayMap []string, warnings ...string) {
+func updateTerminal(displayWord string, attemptsLeft int, guessedChars map[rune]struct{}, displayMap []string, warnings ...string) {
 	tm.Clear()
 	tm.MoveCursor(1, 1)
 	for idx, _ := range displayWord {
@@ -88,9 +92,11 @@ func updateTerminal(displayWord string, attemptsLeft int, guessedChars []rune, d
 	}
 	tm.Println()
 	tm.Println("Guessed letters: ")
-	for i, ch := range guessedChars {
+        i := 0
+	for ch, _ := range guessedChars {
+                i++
 		tm.Print(string(ch))
-		if i < len(guessedChars)-1 {
+		if i < len(guessedChars) {
 			tm.Print(",")
 		}
 	}
