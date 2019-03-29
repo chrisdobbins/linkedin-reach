@@ -9,7 +9,7 @@ import (
 func TestGetWord(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 	d := &dict{}
-        maxAttempts := 6
+	maxAttempts := 6
 
 	// "guessable" words are those that have <= 6 unique letters
 	guessable := []string{"apple", "foil", "foie", "zygote", "delivered"}
@@ -56,7 +56,15 @@ func TestGetWord(t *testing.T) {
 
 	// scenario: empty slice
 	d.words = []string{}
-	_, _, err = getWord(*d,maxAttempts) 
+	_, _, err = getWord(*d, maxAttempts)
+	if err == nil {
+		t.Logf("expected error, got nil")
+		t.Fail()
+	}
+
+	// scenario: empty string
+	d.words = []string{"", "", ""}
+	_, _, err = getWord(*d, maxAttempts)
 	if err == nil {
 		t.Logf("expected error, got nil")
 		t.Fail()
