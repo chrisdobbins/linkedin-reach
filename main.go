@@ -39,9 +39,11 @@ func main() {
 	display := createInitialDisplay(wordToGuess)
 	tm.Println(wordToGuess)
 	var warnings []string
+	guessedChars := []rune{}
+
 	for attempts := 0; attempts < maxAttempts && strings.Join(display, "") != wordToGuess; {
 		attemptsLeft := maxAttempts - attempts
-		updateTerminal(wordToGuess, attemptsLeft, display, warnings...)
+		updateTerminal(wordToGuess, attemptsLeft, guessedChars, display, warnings...)
 
 		reader := bufio.NewReader(os.Stdin)
 		guess, _, _ := reader.ReadRune()
@@ -50,6 +52,7 @@ func main() {
 			continue
 		}
 		warnings = []string{}
+		guessedChars = append(guessedChars, guess)
 		attempts++
 		for _, g := range positionMap[guess] {
 			display[g] = string(wordToGuess[g])
@@ -60,8 +63,8 @@ func main() {
 
 func endGame(word string, display []string) {
 	tm.Clear()
+	tm.MoveCursor(1, 1)
 	if strings.Join(display, "") == word {
-		tm.MoveCursor(1, 1)
 		tm.Println(word)
 		tm.Println("You win!")
 		tm.Flush()
@@ -73,7 +76,7 @@ func endGame(word string, display []string) {
 	tm.Flush()
 }
 
-func updateTerminal(displayWord string, attemptsLeft int, displayMap []string, warnings ...string) {
+func updateTerminal(displayWord string, attemptsLeft int, guessedChars []rune, displayMap []string, warnings ...string) {
 	tm.Clear()
 	tm.MoveCursor(1, 1)
 	for idx, _ := range displayWord {
@@ -82,6 +85,14 @@ func updateTerminal(displayWord string, attemptsLeft int, displayMap []string, w
 	for i, warn := range warnings {
 		tm.MoveCursor(1, i+2)
 		tm.Println(warn)
+	}
+	tm.Println()
+	tm.Println("Guessed letters: ")
+	for i, ch := range guessedChars {
+		tm.Print(string(ch))
+		if i < len(guessedChars)-1 {
+			tm.Print(",")
+		}
 	}
 	tm.Println()
 	tm.Println(fmt.Sprintf("%d attempts left", attemptsLeft))
