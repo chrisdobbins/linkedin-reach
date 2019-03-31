@@ -9,109 +9,43 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"regexp"
 	"strings"
 	"time"
-	"unicode/utf8"
 
-	tm "github.com/buger/goterm"
+	gm "github.com/chrisdobbins/linkedin-reach/game"
 )
 
 var (
+wordToGuess string
 	dictionary *dict
 )
 
 const maxAttempts = 6
 
+var game *gm.Game
+
 func init() {
 	rand.Seed(time.Now().UnixNano())
 	dictionary = &dict{}
-	if err := dictionary.populate(); err != nil {
+        var err error
+	if err = dictionary.populate(); err != nil {
+		log.Fatal(err)
+	}
+	wordToGuess, err = getWord(*dictionary, maxAttempts)
+	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 func main() {
-	wordToGuess, positionMap, err := getWord(*dictionary, maxAttempts)
-	if err != nil {
-		log.Fatal(err)
-	}
-	display := createInitialDisplay(wordToGuess)
-	tm.Println(wordToGuess)
-	var warnings []string
-	guessedChars := map[rune]struct{}{}
-
-	for attempts := 0; attempts < maxAttempts && strings.Join(display, "") != wordToGuess; {
-		attemptsLeft := maxAttempts - attempts
-		updateTerminal(wordToGuess, attemptsLeft, guessedChars, display, warnings...)
-
+	game = gm.Setup(wordToGuess, maxAttempts)
+	for !game.IsOver(){
+		game.Display()
 		reader := bufio.NewReader(os.Stdin)
 		guess, _, _ := reader.ReadRune()
-		if isInvalid(guess) {
-			warnings = []string{"Invalid input. Please enter a letter."}
-			continue
-		}
-                if _, ok := guessedChars[guess]; ok {
-                        warnings = []string{"Letter already guessed. Try again."}
-                        continue
-                }
-		warnings = []string{}
-		guessedChars[guess] = struct{}{}
-		attempts++
-		for _, g := range positionMap[guess] {
-			display[g] = string(wordToGuess[g])
-		}
+		game.Update(guess)
 	}
-	endGame(wordToGuess, display)
-}
-
-func endGame(word string, display []string) {
-	tm.Clear()
-	tm.MoveCursor(1, 1)
-	if strings.Join(display, "") == word {
-		tm.Println(word)
-		tm.Println("You win!")
-		tm.Flush()
-		return
-	}
-
-	tm.Println("You lose :(")
-	tm.Println("The word was", word)
-	tm.Flush()
-}
-
-func updateTerminal(displayWord string, attemptsLeft int, guessedChars map[rune]struct{}, displayMap []string, warnings ...string) {
-	tm.Clear()
-	tm.MoveCursor(1, 1)
-	for idx, _ := range displayWord {
-		tm.Print(displayMap[idx])
-	}
-	for i, warn := range warnings {
-		tm.MoveCursor(1, i+2)
-		tm.Println(warn)
-	}
-	tm.Println()
-	tm.Println("Guessed letters: ")
-        i := 0
-	for ch, _ := range guessedChars {
-                i++
-		tm.Print(string(ch))
-		if i < len(guessedChars) {
-			tm.Print(",")
-		}
-	}
-	tm.Println()
-	tm.Println(fmt.Sprintf("%d attempts left", attemptsLeft))
-	tm.Println("Guess a letter: ")
-	tm.ResetLine("")
-	tm.Flush()
-}
-
-func createInitialDisplay(word string) (display []string) {
-	for _ = range word {
-		display = append(display, "_")
-	}
-	return display
+        game.End()
 }
 
 type dict struct {
@@ -127,10 +61,9 @@ func (d *dict) populate() error {
 	return nil
 }
 
-// testing this first
-func getWord(d dict, maxAttempts int) (string, map[rune][]int, error) {
+func getWord(d dict, maxAttempts int) (string, error) {
 	if len(d.words) == 0 {
-		return "", nil, errors.New("no guessable words")
+		return "", errors.New("no guessable words")
 	}
 	positionMap := map[rune][]int{}
 	wordIndex := rand.Intn(len(d.words))
@@ -141,17 +74,12 @@ func getWord(d dict, maxAttempts int) (string, map[rune][]int, error) {
 	}
 	// ensure that word can be guessed within
 	// configured # of attempts
-	if (len(positionMap) > maxAttempts && len(word) > maxAttempts) || (len(word) == 0) {
+	if (len(positionMap) > maxAttempts) || (len(word) == 0) {
 		newDict := d
 		newDict.words = append(append([]string{}, d.words[:wordIndex]...), d.words[wordIndex+1:]...)
 		return getWord(newDict, maxAttempts)
 	}
-	return word, positionMap, nil
-}
-
-func isInvalid(guess rune) bool {
-	nonLtrFilter := regexp.MustCompile(`[[:^alpha:]]`)
-	return (guess == utf8.RuneError || len(nonLtrFilter.FindString(string(guess))) > 0)
+	return word, nil
 }
 
 func getDictionary() ([]string, error) {

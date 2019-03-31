@@ -19,18 +19,9 @@ func TestGetWord(t *testing.T) {
 	// scenario: guessable word exists in `d.words`
 	expected := guessable[guessableIdx]
 	d.words = append([]string{guessable[guessableIdx]}, unguessable...)
-	word, positionMap, err := getWord(*d, maxAttempts)
+	word, err := getWord(*d, maxAttempts)
 	if err != nil {
 		t.Fail()
-	}
-	if positionMap == nil {
-		t.Fail()
-	}
-	for _, ch := range expected {
-		if _, ok := positionMap[ch]; !ok {
-			t.Logf("%s not found in positionMap", string(ch))
-			t.Fail()
-		}
 	}
 	if word != expected {
 		t.Logf("expected word: %s, actual word: %s", expected, word)
@@ -39,7 +30,7 @@ func TestGetWord(t *testing.T) {
 
 	// scenario: all words are unguessable within 6 attempts
 	d.words = unguessable
-	word, positionMap, err = getWord(*d, maxAttempts)
+	word, err = getWord(*d, maxAttempts)
 	expected = ""
 	if err == nil {
 		t.Logf("expected error to be %v, actual error was: %s", nil, err.Error())
@@ -49,14 +40,10 @@ func TestGetWord(t *testing.T) {
 		t.Logf("expected word: %s, actual word: %s", expected, word)
 		t.Fail()
 	}
-	if positionMap != nil {
-		t.Logf("expected: %v, received: %v", nil, positionMap)
-		t.Fail()
-	}
 
 	// scenario: empty slice
 	d.words = []string{}
-	_, _, err = getWord(*d, maxAttempts)
+	_, err = getWord(*d, maxAttempts)
 	if err == nil {
 		t.Logf("expected error, got nil")
 		t.Fail()
@@ -64,7 +51,7 @@ func TestGetWord(t *testing.T) {
 
 	// scenario: empty string
 	d.words = []string{"", "", ""}
-	_, _, err = getWord(*d, maxAttempts)
+	_, err = getWord(*d, maxAttempts)
 	if err == nil {
 		t.Logf("expected error, got nil")
 		t.Fail()
