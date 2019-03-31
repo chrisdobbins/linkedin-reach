@@ -8,6 +8,21 @@ func TestUpdate(t *testing.T) {
 	// scenario: incorrect guess
 	g.Update('a')
 	expected := []string{"_", "_", "_", "_", "_", "_"}
+        expectedGuessedChars := map[rune]struct{}{'a': struct{}{}}
+        if len(expectedGuessedChars) != len(g.guessedChars) {
+          t.Logf("expected %d guessedChars in g.guessedChars, actual number was %d", len(expectedGuessedChars), len(g.guessedChars))
+          t.Fail()
+        }
+        missedChars := []rune{}
+        for ch, _ := range g.guessedChars {
+             if _, ok := expectedGuessedChars[ch]; !ok {
+                 t.Logf("expected %c not found in g.guessedChars", ch)
+                 missedChars = append(missedChars, ch)
+             }
+        }
+        if len(missedChars) > 0 {
+            t.Fail()
+        }
 	failedIndices := []int{}
 	for idx, ch := range g.disp {
 		if ch != expected[idx] {
@@ -83,7 +98,7 @@ func TestUpdate(t *testing.T) {
 		t.Logf("expected g.remainingGuesses to be %d, actual value is %v", 7, g.remainingGuesses)
 		t.Fail()
 	}
-	expectedGuessedChars := map[rune]struct{}{}
+	expectedGuessedChars = map[rune]struct{}{}
 	if len(g.guessedChars) > 0 {
 		t.Logf("expected g.guessedChars to be %v, actual is %v", expectedGuessedChars, g.guessedChars)
 		t.Fail()
