@@ -30,15 +30,6 @@ func New() (Dict, error) {
 	return *d, nil
 }
 
-func (d *Dict) populate(g getter) error {
-	newDict, err := g.get()
-	if err != nil {
-		return fmt.Errorf("unable to populate dictionary: %s", err.Error())
-	}
-	*d = Dict(newDict)
-	return nil
-}
-
 func (d Dict) GetOne(wc WordCriteria) (string, error) {
 	if len(d) == 0 {
 		return "", errors.New("no words available")
@@ -49,6 +40,7 @@ func (d Dict) GetOne(wc WordCriteria) (string, error) {
 	if wc.MaxUniqueChars == 0 {
 		return word, nil
 	}
+
 	chars := map[rune]struct{}{}
 	for _, ch := range word {
 		chars[ch] = struct{}{}
@@ -60,6 +52,15 @@ func (d Dict) GetOne(wc WordCriteria) (string, error) {
 		return getOne(Dict(dCopy), wc)
 	}
 	return word, nil
+}
+
+func (d *Dict) populate(g getter) error {
+	newDict, err := g.get()
+	if err != nil {
+		return fmt.Errorf("unable to populate dictionary: %s", err.Error())
+	}
+	*d = Dict(newDict)
+	return nil
 }
 
 func (d dictionaryGetter) get() ([]string, error) {
