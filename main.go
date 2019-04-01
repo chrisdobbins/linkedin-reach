@@ -16,8 +16,8 @@ import (
 )
 
 var (
-wordToGuess string
-	dictionary *dict
+	wordToGuess string
+	dictionary  *dict
 )
 
 const maxAttempts = 6
@@ -27,7 +27,7 @@ var game *gm.Game
 func init() {
 	rand.Seed(time.Now().UnixNano())
 	dictionary = &dict{}
-        var err error
+	var err error
 	if err = dictionary.populate(); err != nil {
 		log.Fatal(err)
 	}
@@ -39,13 +39,13 @@ func init() {
 
 func main() {
 	game = gm.Setup(wordToGuess, maxAttempts)
-	for !game.IsOver(){
+	for !game.IsOver() {
 		game.Display()
 		reader := bufio.NewReader(os.Stdin)
 		guess, _, _ := reader.ReadRune()
 		game.Update(guess)
 	}
-        game.End()
+	game.End()
 }
 
 type dict struct {
