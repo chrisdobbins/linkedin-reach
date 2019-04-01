@@ -43,20 +43,21 @@ func (d Dict) GetOne(wc WordCriteria) (string, error) {
 	if len(d) == 0 {
 		return "", errors.New("no words available")
 	}
-	chars := map[rune]struct{}{}
 	wordIdx := rand.Intn(len(d))
 	word := d[wordIdx]
+
+	if wc.MaxUniqueChars == 0 {
+		return word, nil
+	}
+	chars := map[rune]struct{}{}
 	for _, ch := range word {
 		chars[ch] = struct{}{}
 	}
-	if wc.MaxUniqueChars > 0 {
-		if len(chars) > wc.MaxUniqueChars || len(word) == 0 {
-			getOne := Dict.GetOne
-			dCopy := []string(d)
-			dCopy = append(append([]string{}, d[:wordIdx]...), d[wordIdx+1:]...)
-			return getOne(Dict(dCopy), wc)
-		}
-		return word, nil
+	if len(chars) > wc.MaxUniqueChars || len(word) == 0 {
+		getOne := Dict.GetOne
+		dCopy := []string(d)
+		dCopy = append(append([]string{}, d[:wordIdx]...), d[wordIdx+1:]...)
+		return getOne(Dict(dCopy), wc)
 	}
 	return word, nil
 }
