@@ -23,3 +23,4 @@ deploy:
     branch: master
     repo: chrisdobbins/linkedin-reach
     tags: true
+  skip_cleanup: true
