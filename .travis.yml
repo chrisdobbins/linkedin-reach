@@ -1,16 +1,13 @@
 language: go
 go:
 - 1.11.5
-script:
-- go test ./*/
-- env GOOS="darwin" GOARCH="amd64" go build -o game-darwin-amd64 .
-- env GOOS="windows" GOARCH="amd64" go build -o game-windows-amd64.exe .
-- env GOOS="linux" GOARCH="arm" go build -o game-linux-arm .
-- env GOOS="linux" GOARCH="amd64" go build -o game-linux-amd64 .
-
 env:
 - GO111MODULE=on
-
+before_deploy:
+  - env GOOS="darwin" GOARCH="amd64" go build -o game-darwin-amd64 .
+  - env GOOS="windows" GOARCH="amd64" go build -o game-windows-amd64.exe .
+  - env GOOS="linux" GOARCH="arm" go build -o game-linux-arm .
+  - env GOOS="linux" GOARCH="amd64" go build -o game-linux-amd64 .
 deploy:
   provider: releases
   api_key:
