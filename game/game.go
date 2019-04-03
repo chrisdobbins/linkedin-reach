@@ -5,8 +5,6 @@ import (
 	"regexp"
 	"strings"
 	"unicode/utf8"
-
-	tm "github.com/buger/goterm"
 )
 
 type Player int
@@ -19,11 +17,32 @@ const (
 type Game struct {
 	secret           string
 	disp             display
-	warning          string
+	message          string
 	remainingGuesses int
 	guessedChars     map[rune]struct{}
 	charPositions    map[rune][]int
 	winner           *Player
+}
+
+type State struct {
+	Secret           []string
+	RemainingGuesses int
+	Message          string
+	GuessedChars     []rune
+	EndResult        *Player
+}
+
+func (g *Game) Progress() State {
+	guessedChars := []rune{}
+	for ch, _ := range g.guessedChars {
+		guessedChars = append(guessedChars, ch)
+	}
+	return State{
+		Secret:           []string(g.disp),
+		RemainingGuesses: g.remainingGuesses,
+		Message:          g.message,
+		GuessedChars:     guessedChars,
+	}
 }
 
 func Setup(secretWord string, guesses int) *Game {
@@ -70,10 +89,10 @@ func (d *display) update(ltr rune, positions ...int) {
 func (g *Game) Update(guess rune) {
 	warning := validate(guess, g.guessedChars)
 	if len(warning) > 0 {
-		g.warning = warning
+		g.message = warning
 		return
 	}
-	g.warning = ""
+	g.message = ""
 	guess = lowerCase(guess)
 
 	g.guessedChars[guess] = struct{}{}
@@ -109,45 +128,16 @@ func validate(guess rune, guessedLetters map[rune]struct{}) (warning string) {
 	return
 }
 
-func (g *Game) Display() {
-	tm.Clear()
-	tm.MoveCursor(1, 1)
-	for _, ch := range g.disp {
-		tm.Print(ch)
-	}
-	tm.Println()
-	tm.MoveCursor(1, 3)
-	tm.Println(g.warning)
-	tm.Println("Guessed letters: ")
-	i := 0
-	for ch, _ := range g.guessedChars {
-		i++
-		tm.Print(string(ch))
-		if i < len(g.guessedChars) {
-			tm.Print(",")
-		}
-	}
-	tm.Println()
-	tm.Println(fmt.Sprintf("Attempts left: %d", g.remainingGuesses))
-	tm.Println("Guess a letter: ")
-	tm.ResetLine("")
-	tm.Flush()
-}
-
 func (g *Game) IsOver() bool {
 	return g.winner != nil
 }
 
-func (g *Game) End() {
-	tm.Clear()
-	tm.MoveCursor(1, 1)
+func (g *Game) Result() (s State) {
+	s.EndResult = g.winner
 	if *g.winner == User {
-		tm.Println(g.secret)
-		tm.Println("You win!")
-		tm.Flush()
+		s.Message = "You win!"
 		return
 	}
-	tm.Println("You lose :(")
-	tm.Println("The word was", g.secret)
-	tm.Flush()
+	s.Message = fmt.Sprintf("You lose :( \nThe word was %s", g.secret)
+	return s
 }

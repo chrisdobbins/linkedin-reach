@@ -112,8 +112,8 @@ func TestUpdateInvalidChar(t *testing.T) {
 	if strings.Join(expectedDisplay, "") != strings.Join(g.disp, "") {
 		t.Errorf("g.disp is %v", g.disp)
 	}
-	if g.warning != "Invalid input. Please enter a letter." {
-		t.Errorf("g.warning is %s", g.warning)
+	if g.message != "Invalid input. Please enter a letter." {
+		t.Errorf("g.message is %s", g.message)
 	}
 	if len(g.guessedChars) > 0 {
 		t.Errorf("g.guessedChars is %v", g.guessedChars)

@@ -4,13 +4,16 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	_ "go/build"
 	"log"
 	"math/rand"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/chrisdobbins/linkedin-reach/dictionary"
 	gm "github.com/chrisdobbins/linkedin-reach/game"
+	"github.com/chrisdobbins/linkedin-reach/ui"
 )
 
 const defaultMaxAttempts = 6
@@ -29,7 +32,6 @@ Basic options:
 
 var (
 	wordToGuess string
-	game        *gm.Game
 	helpFlag    bool
 	maxAttempts int
 )
@@ -55,13 +57,34 @@ func init() {
 
 func main() {
 	flag.Parse()
+	var uiDisplay ui.Display
 
-	game = gm.Setup(wordToGuess, maxAttempts)
+	game := gm.Setup(wordToGuess, maxAttempts)
 	for !game.IsOver() {
-		game.Display()
+		uiDisplay = transform(game.Progress())
+		uiDisplay.Write()
 		reader := bufio.NewReader(os.Stdin)
 		guess, _, _ := reader.ReadRune()
 		game.Update(guess)
 	}
-	game.End()
+
+	uiDisplay = transform(game.Result())
+	uiDisplay.Write()
+}
+
+func transform(state gm.State) (d ui.Display) {
+	remainingGuessesTemplate := "%d guesses left"
+	prompt := []byte("Guess a letter: ")
+	d.Messages = [][]byte{}
+	d.Secret = []byte(strings.Join(state.Secret, ""))
+	d.GuessedChars = []byte{}
+	for _, ch := range state.GuessedChars {
+		d.GuessedChars = append(d.GuessedChars, byte(ch))
+	}
+	d.Messages = append(d.Messages, []byte(fmt.Sprintf(remainingGuessesTemplate, state.RemainingGuesses)))
+	d.Messages = append(d.Messages, []byte(state.Message))
+	if state.EndResult == nil {
+		d.Messages = append(d.Messages, append(prompt))
+	}
+	return
 }
