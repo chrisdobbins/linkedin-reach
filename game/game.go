@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -45,7 +46,10 @@ func (g *Game) Progress() State {
 	}
 }
 
-func Setup(secretWord string, guesses int) *Game {
+func Setup(secretWord string, guesses int) (*Game, error) {
+	if guesses <= 0 {
+		return &Game{}, fmt.Errorf("unable to set up game with %d guesses", guesses)
+	}
 	d := &display{}
 	d.init(len(secretWord))
 	g := &Game{
@@ -59,7 +63,7 @@ func Setup(secretWord string, guesses int) *Game {
 	for idx, ch := range g.secret {
 		g.charPositions[ch] = append(g.charPositions[ch], idx)
 	}
-	return g
+	return g, nil
 }
 
 type display []string
@@ -93,7 +97,7 @@ func (g *Game) Update(guess rune) {
 		return
 	}
 	g.message = ""
-	guess = lowerCase(guess)
+	guess = unicode.ToLower(guess)
 
 	g.guessedChars[guess] = struct{}{}
 	for _, pos := range g.charPositions[guess] {
@@ -139,5 +143,5 @@ func (g *Game) Result() (s State) {
 		return
 	}
 	s.Message = fmt.Sprintf("You lose :( \nThe word was %s", g.secret)
-	return s
+	return
 }

@@ -13,12 +13,13 @@ import (
 
 	"github.com/chrisdobbins/linkedin-reach/dictionary"
 	gm "github.com/chrisdobbins/linkedin-reach/game"
+	"github.com/chrisdobbins/linkedin-reach/server"
 	"github.com/chrisdobbins/linkedin-reach/ui"
 )
 
 const defaultMaxAttempts = 6
 
-const guessesUsage = "Configures the maximum allowed number of guesses."
+const guessesUsage = "Configures th maximum allowed number of guesses."
 const help = `
 This is a word-guessing game similar to hangman. 
 Rules:
@@ -28,12 +29,15 @@ Good luck and have fun!
 
 Basic options:
 -h, --help: Brings up this message
--guesses, --guesses: Configures the maximum allowed number of guesses. Default is %d` + "\n"
+-guesses, --guesses: Configures the maximum allowed number of guesses. Default is %d
+-serve, --serve: Starts web version of this game` + "\n"
 
 var (
-	wordToGuess string
-	helpFlag    bool
-	maxAttempts int
+	wordToGuess  string
+	helpFlag     bool
+	maxAttempts  int
+	serveAddress string
+	shouldServe  bool
 )
 
 func init() {
@@ -41,6 +45,8 @@ func init() {
 
 	flag.Usage = func() { fmt.Fprintf(os.Stderr, fmt.Sprintf(help, defaultMaxAttempts)) }
 	flag.IntVar(&maxAttempts, "guesses", defaultMaxAttempts, guessesUsage)
+	flag.BoolVar(&shouldServe, "serve", false, "whether to start web version of game")
+	serveAddress = "localhost:8080"
 
 	wordCriteria := dictionary.WordCriteria{
 		MaxUniqueChars: maxAttempts,
@@ -58,18 +64,24 @@ func init() {
 func main() {
 	flag.Parse()
 	var uiDisplay ui.Display
+	if shouldServe {
+		server.Serve(serveAddress, wordToGuess, defaultMaxAttempts)
+	} else { // debug else statement
+		game, err := gm.Setup(wordToGuess, maxAttempts)
+                if err != nil {
+                   log.Fatalf("unable to set up game: %s", err.Error())
+                }
+		for !game.IsOver() {
+			uiDisplay = transform(game.Progress())
+			uiDisplay.Write()
+			reader := bufio.NewReader(os.Stdin)
+			guess, _, _ := reader.ReadRune()
+			game.Update(guess)
+		}
 
-	game := gm.Setup(wordToGuess, maxAttempts)
-	for !game.IsOver() {
-		uiDisplay = transform(game.Progress())
+		uiDisplay = transform(game.Result())
 		uiDisplay.Write()
-		reader := bufio.NewReader(os.Stdin)
-		guess, _, _ := reader.ReadRune()
-		game.Update(guess)
 	}
-
-	uiDisplay = transform(game.Result())
-	uiDisplay.Write()
 }
 
 func transform(state gm.State) (d ui.Display) {
