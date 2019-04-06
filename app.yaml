@@ -1,9 +1,13 @@
-runtime: go111
+runtime: go
+env: flex
+manual_scaling:
+  instances: 1
+env_variables:
+  GO111MODULE: on
 instance_class: F2
-api_version: go1
 
 handlers:
 - url: /play
-  script: _go_app
+  script: auto
 - url: /
-  script: _go_app
+  script: auto

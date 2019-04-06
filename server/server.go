@@ -28,7 +28,7 @@ func getWord() (string, error) {
 	return wordToGuess, nil
 }
 
-func Serve(addr string, d *dictionary.Dict, maxGuesses int) {
+func Serve(port string, d *dictionary.Dict, maxGuesses int) {
 	maxAttempts = maxGuesses
 	if d == (&dictionary.Dict{}) {
 		log.Fatal("Serve: dictionary is nil")
@@ -36,7 +36,7 @@ func Serve(addr string, d *dictionary.Dict, maxGuesses int) {
 	gameDictionary = d
 	http.HandleFunc("/play", playGame)
 	http.HandleFunc("/", page)
-	log.Fatal(http.ListenAndServe(addr, nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s",port), nil))
 }
 
 func playGame(w http.ResponseWriter, r *http.Request) {

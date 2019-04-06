@@ -36,7 +36,7 @@ var (
 	wordToGuess    string
 	helpFlag       bool
 	maxAttempts    int
-	serveAddress   string
+	port   string
 	shouldServe    bool
 	gameDictionary *dictionary.Dict
 )
@@ -47,7 +47,11 @@ func init() {
 	flag.Usage = func() { fmt.Fprintf(os.Stderr, fmt.Sprintf(help, defaultMaxAttempts)) }
 	flag.IntVar(&maxAttempts, "guesses", defaultMaxAttempts, guessesUsage)
 	flag.BoolVar(&shouldServe, "serve", false, "whether to start web version of game")
-	serveAddress = "localhost:8080"
+	port = "8080"
+        if os.Getenv("PORT") != "" {
+           shouldServe = true
+           port = os.Getenv("PORT")
+        }
 
 	newDict, err := dictionary.New()
 	if err != nil {
@@ -60,7 +64,7 @@ func main() {
 	flag.Parse()
 	var uiDisplay ui.Display
 	if shouldServe {
-		server.Serve(serveAddress, gameDictionary, defaultMaxAttempts)
+		server.Serve(port, gameDictionary, defaultMaxAttempts)
 	} else { // debug else statement
 		var err error
 		wordCriteria := dictionary.WordCriteria{
