@@ -19,7 +19,7 @@ import (
 
 const defaultMaxAttempts = 6
 
-const guessesUsage = "Configures th maximum allowed number of guesses."
+const guessesUsage = "Configures the maximum allowed number of guesses."
 const help = `
 This is a word-guessing game similar to hangman. 
 Rules:
