@@ -8,20 +8,32 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/chrisdobbins/linkedin-reach/dictionary"
 	gm "github.com/chrisdobbins/linkedin-reach/game"
 	"github.com/gorilla/websocket"
 )
 
 var (
-	wordToGuess string
-	maxAttempts int
-	uiDisplay   Display
+	wordToGuess    string
+	maxAttempts    int
+	uiDisplay      Display
+	gameDictionary *dictionary.Dict
 )
 
-func Serve(addr, word string, maxGuesses int) {
+func getWord() (string, error) {
+	wordToGuess, err := gameDictionary.GetOne(dictionary.WordCriteria{MaxUniqueChars: maxAttempts})
+	if err != nil {
+		return "", fmt.Errorf("getWord: %s", err.Error())
+	}
+	return wordToGuess, nil
+}
+
+func Serve(addr string, d *dictionary.Dict, maxGuesses int) {
 	maxAttempts = maxGuesses
-	fmt.Println("serve max attemtps: ", maxAttempts)
-	wordToGuess = word
+	if d == (&dictionary.Dict{}) {
+		log.Fatal("Serve: dictionary is nil")
+	}
+	gameDictionary = d
 	http.HandleFunc("/play", playGame)
 	http.HandleFunc("/", page)
 	log.Fatal(http.ListenAndServe(addr, nil))
@@ -30,37 +42,48 @@ func Serve(addr, word string, maxGuesses int) {
 func playGame(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("unable to upgrade connection: %s", err.Error())
+		http.Error(w, "Oops! Please try again.", http.StatusInternalServerError)
+		return
 	}
 	defer conn.Close()
-
+	wordToGuess, err := getWord()
+	if err != nil {
+		log.Printf("playGame: %s\n", err.Error())
+		http.Error(w, "Oops! Please try again.", http.StatusInternalServerError)
+		return
+	}
 	game, err := gm.Setup(wordToGuess, maxAttempts)
 	if err != nil {
 		log.Println(fmt.Sprintf("gm.Setup: %s", err.Error()))
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Oops! Please try again.", http.StatusInternalServerError)
+		return
 	}
 	for !game.IsOver() {
 		uiDisplay = transform(game.Progress())
 		out, err := json.Marshal(uiDisplay)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Printf("unable to marshal JSON: %s", err.Error())
+			http.Error(w, "Oops! Please try again.", http.StatusInternalServerError)
+			return
 		}
 		conn.WriteMessage(websocket.TextMessage, out)
 		_, msg, err := conn.ReadMessage()
-
 		if err != nil {
 			fmt.Printf("err conn.ReadMessage: %s\n", err.Error())
+			http.Error(w, "Oops! Please try again.", http.StatusInternalServerError)
 			return
 		}
-		if len(msg) == 0 {
-			return
+		if len(msg) > 0 {
+			game.Update(rune(msg[0]))
 		}
-		game.Update(rune(msg[0]))
 	}
 	uiDisplay = transform(game.Result())
 	out, err := json.Marshal(uiDisplay)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("unable to unmarshal %v: %s", out, err.Error())
+		http.Error(w, "Oops! Please try again.", http.StatusInternalServerError)
+		return
 	}
 	conn.WriteMessage(websocket.TextMessage, out)
 }
@@ -68,8 +91,9 @@ func playGame(w http.ResponseWriter, r *http.Request) {
 type Display struct {
 	Secret           string `json:"secret"`
 	GuessedChars     string `json:"guessedChars"`
-	Message          string `json:"messages"`
-	RemainingGuesses int    `json:"remainingGuesses`
+	Message          string `json:"message"`
+	RemainingGuesses int    `json:"remainingGuesses"`
+        GameOver bool `json:"gameOver"`
 }
 
 func transform(state gm.State) (d Display) {
@@ -79,9 +103,11 @@ func transform(state gm.State) (d Display) {
 		gc = append(gc, string(ch))
 	}
 	d.GuessedChars = strings.Join(gc, ",")
-	fmt.Println(state.Message)
 	d.RemainingGuesses = state.RemainingGuesses
 	d.Message = state.Message
+        if state.EndResult != nil {
+             d.GameOver = true
+        }
 	return
 }
 
@@ -91,80 +117,5 @@ func page(w http.ResponseWriter, r *http.Request) {
 
 var (
 	upgrader = websocket.Upgrader{}
-	tmpl     = template.Must(template.New("").Parse(`
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<script>  
-window.addEventListener("load", function(evt) {
-    var debug = document.getElementById("debug");
-    var input = document.getElementById("input");
-    var ws;
-    var print = function(message) {
-        var d = document.createElement("div");
-        d.innerHTML = message;
-        debug.appendChild(d);
-    };
-        if (!ws) {
-        ws = new WebSocket("{{.}}");
-        ws.onopen = function(evt) {
-            print("OPEN");
-        }
-        ws.onclose = function(evt) {
-            print("CLOSE");
-            ws = null;
-        }
-        ws.onmessage = function(evt) {
-            print("RESPONSE: " + evt.data);
-        }
-        ws.onerror = function(evt) {
-            print("ERROR: " + evt.data);
-        }
-        }
-    document.getElementById("send").onclick = function(evt) {
-        if (!ws) {
-            return false;
-        }
-        print("SEND: " + input.value);
-        ws.send(input.value);
-        return false;
-    };
-});
-</script>
-</head>
-<body>
-<table>
-<tr><td valign="top" width="50%">
-<p>Click "Open" to create a connection to the server, 
-"Send" to send a message to the server and "Close" to close the connection. 
-You can change the message and send multiple times.
-<p>
-<form>
-<button id="open">Open</button>
-<p><input id="input" type="text" value="Hello world!">
-<button id="send">Send</button>
-</form>
-</td><td valign="top" width="50%">
-<div id="secret"></div>
-</td></tr>
-<tr>
-<td>
-<div id="remainingGuesses"></div>
-</td>
-<tr>
-<td>
-<div id="debug"></div>
-</td>
-</tr>
-</tr>
-<tr>
-<td>
-<div id="guessedChars"></div>
-</td>
-</tr>
-</table>
-</body>
-</html>
-`))
+	tmpl     = template.Must(template.New("").Parse(frontend))
 )

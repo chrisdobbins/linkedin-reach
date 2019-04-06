@@ -142,6 +142,6 @@ func (g *Game) Result() (s State) {
 		s.Message = "You win!"
 		return
 	}
-	s.Message = fmt.Sprintf("You lose :( \nThe word was %s", g.secret)
+	s.Message = fmt.Sprintf("You lose :(\n The word was %s", g.secret)
 	return
 }

@@ -33,11 +33,12 @@ Basic options:
 -serve, --serve: Starts web version of this game` + "\n"
 
 var (
-	wordToGuess  string
-	helpFlag     bool
-	maxAttempts  int
-	serveAddress string
-	shouldServe  bool
+	wordToGuess    string
+	helpFlag       bool
+	maxAttempts    int
+	serveAddress   string
+	shouldServe    bool
+	gameDictionary *dictionary.Dict
 )
 
 func init() {
@@ -48,29 +49,31 @@ func init() {
 	flag.BoolVar(&shouldServe, "serve", false, "whether to start web version of game")
 	serveAddress = "localhost:8080"
 
-	wordCriteria := dictionary.WordCriteria{
-		MaxUniqueChars: maxAttempts,
-	}
-	gameDictionary, err := dictionary.New()
+	newDict, err := dictionary.New()
 	if err != nil {
 		log.Fatal(err)
 	}
-	wordToGuess, err = gameDictionary.GetOne(wordCriteria)
-	if err != nil {
-		log.Fatal(err)
-	}
+	gameDictionary = &newDict
 }
 
 func main() {
 	flag.Parse()
 	var uiDisplay ui.Display
 	if shouldServe {
-		server.Serve(serveAddress, wordToGuess, defaultMaxAttempts)
+		server.Serve(serveAddress, gameDictionary, defaultMaxAttempts)
 	} else { // debug else statement
+		var err error
+		wordCriteria := dictionary.WordCriteria{
+			MaxUniqueChars: maxAttempts,
+		}
+		wordToGuess, err := gameDictionary.GetOne(wordCriteria)
+		if err != nil {
+			log.Fatal(err)
+		}
 		game, err := gm.Setup(wordToGuess, maxAttempts)
-                if err != nil {
-                   log.Fatalf("unable to set up game: %s", err.Error())
-                }
+		if err != nil {
+			log.Fatalf("unable to set up game: %s", err.Error())
+		}
 		for !game.IsOver() {
 			uiDisplay = transform(game.Progress())
 			uiDisplay.Write()
