@@ -56,6 +56,7 @@ func init() {
 =======
 	port = "localhost:8080"
         if os.Getenv("GAE_SERVICE") != "" {
+           shouldServe = true
            port = os.Getenv("PORT")
         }
 >>>>>>> .
