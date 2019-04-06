@@ -10,7 +10,7 @@ before_deploy:
 - env GOOS="linux" GOARCH="amd64" go build -o game-linux-amd64 .
 deploy:
 - provider: gae
-  keyfile: google.json.enc
+  keyfile: google.json
   project: sixth-decoder-117712
   on:
     branch: feature
