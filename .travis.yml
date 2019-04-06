@@ -9,14 +9,13 @@ before_deploy:
 - env GOOS="linux" GOARCH="arm" go build -o game-linux-arm .
 - env GOOS="linux" GOARCH="amd64" go build -o game-linux-amd64 .
 deploy:
-  provider: gae
+  provider: releases
   keyfile: My Project-c6a5cc333cf9.json.enc
   project: sixth-decoder-117712
   on:
-    branch: server
+    branch: master
     repo: chrisdobbins/linkedin-reach
     tags: true
-  provider: releases
   api_key:
     secure: P1+Qht9ounwjMZEW26ihUHe5NnRncha3A66iz9y5jRyhfzKOafUy3jFu/XUjopMRu49HrYtZNBFuWqi21zYLzomwBnDaO4jAwjv3IAirE673Pb69ItS5yUhK9VZTxKCGhlJ/ozHoOZLbMzKWb28NXtb46jfCVA86T6e6XIIjnQVOyvg3SgI21HVe0XAgRKcaWvu6mxd6MK8y8eoSWPmRRemi5HSSA2PqOZC1/P3Ifcf5k5S2vVWFcRKLSOHk8gzRDhtY4s2cWsE0luE5idAmACKlHv50CPyUbF4gWn+ohWN/KFRpVI9F4KsMsBr5ZR3DOw4vsXCHbfq75TcZg2qNvNECD5BRqLGRjgsLVp2+3Uo1HukC985c2fefwvllLc6CVrYJuDVWJ59Lbds0A7Ce64JsisZGSZcx6cIfE6WIdGlVlm6c4iPjwsckBn6PU7bPwB+H7WEWA66JzFaT2vfNYMBgx0frhPFSqBUnQbhETlJCa0cFvDdZukv1dYkBz/N3Gk+5rWOvFpr/vnvGwJ90DqFk30MCQSx63wH50KLDJbibcw4ZkWHvKO4PKbgjEHF7y1zzqJEcSwxUtbn9HmmnrexpLRx+Gj3/0h09rhkeiSWryLe8+NeOxUBPg8qw6Fezh52Y47Aj5w1Y4132TVy9aMKBeJgN7+tXjx0KXO5K3YM=
   file:
@@ -24,12 +23,7 @@ deploy:
   - game-windows-amd64.exe
   - game-linux-arm
   - game-linux-amd64
-  on:
-    branch: master
-    repo: chrisdobbins/linkedin-reach
-    tags: true
   skip_cleanup: true
 before_install:
 - openssl aes-256-cbc -K $encrypted_7bb35daf0ce2_key -iv $encrypted_7bb35daf0ce2_iv
-  -in My\ Project-c6a5cc333cf9.json.enc -out ~\/Downloads/My\ Project-c6a5cc333cf9.json
-  -d
+  -in My\ Project-c6a5cc333cf9.json.enc -out My\ Project-c6a5cc333cf9.json -d
