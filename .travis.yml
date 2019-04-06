@@ -13,7 +13,7 @@ deploy:
   keyfile: My Project-c6a5cc333cf9.json.enc
   project: sixth-decoder-117712
   on:
-    branch: server
+    branch: feature
     tags: false
   skip_cleanup: true
 - provider: releases
