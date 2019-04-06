@@ -9,9 +9,14 @@ before_deploy:
 - env GOOS="linux" GOARCH="arm" go build -o game-linux-arm .
 - env GOOS="linux" GOARCH="amd64" go build -o game-linux-amd64 .
 deploy:
-  provider: releases
+- provider: gae
   keyfile: My Project-c6a5cc333cf9.json.enc
   project: sixth-decoder-117712
+  on:
+    branch: server
+    tags: false
+  skip_cleanup: true
+- provider: releases
   on:
     branch: master
     repo: chrisdobbins/linkedin-reach
