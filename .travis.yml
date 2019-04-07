@@ -19,6 +19,7 @@ deploy:
     branch: master
     tags: true
   skip_cleanup: true
+  run: "./game-linux-amd64 --serve &"
 - provider: releases
   on:
     branch: master
