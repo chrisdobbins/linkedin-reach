@@ -1,0 +1,6 @@
+# github.com/buger/goterm v0.0.0-20181115115552-c206103e1f37
+github.com/buger/goterm
+# github.com/gorilla/websocket v1.4.0
+github.com/gorilla/websocket
+# golang.org/x/sys v0.0.0-20190322080309-f49334f85ddc
+golang.org/x/sys/unix
