@@ -1,10 +1,6 @@
 language: go
 go:
-<<<<<<< HEAD
 - 1.12
-=======
-- 1.9
->>>>>>> .
 env:
 - GO111MODULE=on
 before_deploy:
