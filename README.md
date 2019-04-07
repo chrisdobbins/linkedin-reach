@@ -12,4 +12,5 @@ Good luck and have fun!
 
 Basic options:
 * `-h`, `--help`: Brings up this message
-* `-guesses`, `--guesses`: Configures the maximum allowed number of guesses. Default is 6
+* `-guesses`, `--guesses`: Configures the maximum allowed number of guesses. Default is 6.
+* `-serve`, `--serve`: Starts web app instead of terminal app. Default port is 8080, but can be changed by setting the `PORT` environment variable.
