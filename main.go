@@ -48,6 +48,7 @@ func init() {
 	flag.IntVar(&maxAttempts, "guesses", defaultMaxAttempts, guessesUsage)
 	flag.BoolVar(&shouldServe, "serve", false, "whether to start web version of game")
 <<<<<<< HEAD
+<<<<<<< HEAD
 	port = "8080"
 	if os.Getenv("PORT") != "" {
 		shouldServe = true
@@ -55,6 +56,9 @@ func init() {
 	}
 =======
 	port = "localhost:8080"
+=======
+	port = "8080"
+>>>>>>> .
         if os.Getenv("GAE_SERVICE") != "" {
            shouldServe = true
            port = os.Getenv("PORT")
