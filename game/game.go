@@ -114,13 +114,6 @@ func (g *Game) Update(guess rune) {
 	}
 }
 
-func lowerCase(input rune) rune {
-	if input < 'a' {
-		return input + 32
-	}
-	return input
-}
-
 func validate(guess rune, guessedLetters map[rune]struct{}) (warning string) {
 	nonLtrFilter := regexp.MustCompile(`[[:^alpha:]]`)
 	if guess == utf8.RuneError || len(nonLtrFilter.FindString(string(guess))) > 0 {

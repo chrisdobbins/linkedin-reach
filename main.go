@@ -1,20 +1,16 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
-	_ "go/build"
 	"log"
 	"math/rand"
 	"os"
-	"strings"
 	"time"
 
+	"github.com/chrisdobbins/linkedin-reach/cli"
 	"github.com/chrisdobbins/linkedin-reach/dictionary"
-	gm "github.com/chrisdobbins/linkedin-reach/game"
 	"github.com/chrisdobbins/linkedin-reach/server"
-	"github.com/chrisdobbins/linkedin-reach/ui"
 )
 
 const defaultMaxAttempts = 6
@@ -36,7 +32,7 @@ var (
 	wordToGuess    string
 	helpFlag       bool
 	maxAttempts    int
-	port   string
+	port           string
 	shouldServe    bool
 	gameDictionary *dictionary.Dict
 )
@@ -48,10 +44,10 @@ func init() {
 	flag.IntVar(&maxAttempts, "guesses", defaultMaxAttempts, guessesUsage)
 	flag.BoolVar(&shouldServe, "serve", false, "whether to start web version of game")
 	port = "8080"
-        if os.Getenv("PORT") != "" {
-           shouldServe = true
-           port = os.Getenv("PORT")
-        }
+	if os.Getenv("PORT") != "" {
+		shouldServe = true
+		port = os.Getenv("PORT")
+	}
 
 	newDict, err := dictionary.New()
 	if err != nil {
@@ -62,48 +58,12 @@ func init() {
 
 func main() {
 	flag.Parse()
-	var uiDisplay ui.Display
+	if &maxAttempts == nil {
+		maxAttempts = defaultMaxAttempts
+	}
 	if shouldServe {
-		server.Serve(port, gameDictionary, defaultMaxAttempts)
-	} else { // debug else statement
-		var err error
-		wordCriteria := dictionary.WordCriteria{
-			MaxUniqueChars: maxAttempts,
-		}
-		wordToGuess, err := gameDictionary.GetOne(wordCriteria)
-		if err != nil {
-			log.Fatal(err)
-		}
-		game, err := gm.Setup(wordToGuess, maxAttempts)
-		if err != nil {
-			log.Fatalf("unable to set up game: %s", err.Error())
-		}
-		for !game.IsOver() {
-			uiDisplay = transform(game.Progress())
-			uiDisplay.Write()
-			reader := bufio.NewReader(os.Stdin)
-			guess, _, _ := reader.ReadRune()
-			game.Update(guess)
-		}
-
-		uiDisplay = transform(game.Result())
-		uiDisplay.Write()
+		server.Serve(port, gameDictionary, maxAttempts)
+		return
 	}
-}
-
-func transform(state gm.State) (d ui.Display) {
-	remainingGuessesTemplate := "%d guesses left"
-	prompt := []byte("Guess a letter: ")
-	d.Messages = [][]byte{}
-	d.Secret = []byte(strings.Join(state.Secret, ""))
-	d.GuessedChars = []byte{}
-	for _, ch := range state.GuessedChars {
-		d.GuessedChars = append(d.GuessedChars, byte(ch))
-	}
-	d.Messages = append(d.Messages, []byte(fmt.Sprintf(remainingGuessesTemplate, state.RemainingGuesses)))
-	d.Messages = append(d.Messages, []byte(state.Message))
-	if state.EndResult == nil {
-		d.Messages = append(d.Messages, append(prompt))
-	}
-	return
+	cli.PlayGame(gameDictionary, maxAttempts)
 }

@@ -1,6 +1,6 @@
 package server
 
-var frontend = `
+const frontend = `
 <!DOCTYPE html>
 <html>
 <head>

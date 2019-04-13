@@ -78,5 +78,6 @@ func (d dictionaryGetter) get() ([]string, error) {
 	if err != nil {
 		return []string{}, fmt.Errorf(errorTemplate, err.Error())
 	}
+	defer resp.Body.Close()
 	return strings.Split(string(body), "\n"), nil
 }
