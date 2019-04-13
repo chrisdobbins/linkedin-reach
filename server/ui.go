@@ -2,8 +2,9 @@ package server
 
 import (
 	"sort"
-	gm "github.com/chrisdobbins/linkedin-reach/game"
 	"strings"
+
+	gm "github.com/chrisdobbins/linkedin-reach/game"
 )
 
 type Display struct {
@@ -24,7 +25,7 @@ func (d *Display) format() {
 	d.GuessedChars = strings.Join(gc, ",")
 }
 
-func transform(state gm.State) (*Display) {
+func transform(state gm.State) *Display {
 	d := &Display{}
 	d.Secret = strings.Join(state.Secret, "")
 	gc := []string{}
