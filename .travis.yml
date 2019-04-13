@@ -16,7 +16,7 @@ deploy:
   app: limitless-bastion-18713
   on:
     branch: master
-    tags: false
+    tags: true
   skip_cleanup: true
 - provider: releases
   on:

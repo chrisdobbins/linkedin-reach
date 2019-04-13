@@ -14,3 +14,5 @@ Basic options:
 * `-h`, `--help`: Brings up this message
 * `-guesses`, `--guesses`: Configures the maximum allowed number of guesses. Default is 6.
 * `-serve`, `--serve`: Starts web app instead of terminal app. Default port is 8080, but can be changed by setting the `PORT` environment variable.
+
+This game is currently deployed at [http://limitless-bastion-18713.herokuapp.com/](http://limitless-bastion-18713.herokuapp.com/).
