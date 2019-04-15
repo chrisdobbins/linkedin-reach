@@ -57,7 +57,7 @@ func init() {
 
 func main() {
 	flag.Parse()
-	if &maxAttempts == nil {
+	if &maxAttempts == nil || maxAttempts == 0 {
 		maxAttempts = defaultMaxAttempts
         }
 	if shouldServe {
