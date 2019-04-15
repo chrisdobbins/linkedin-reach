@@ -69,30 +69,6 @@ func Setup(secretWord string, guesses int) (*Game, error) {
 	return g, nil
 }
 
-type display []string
-
-func (d *display) init(length int) {
-	disp := []string{}
-	for i := 0; i < length; i++ {
-		disp = append(disp, "_")
-	}
-	*d = display(disp)
-}
-
-func (d *display) update(ltr rune, positions ...int) {
-	dCopy := []string{}
-	for i, ch := range *d {
-		dCopy = append(dCopy, string(ch))
-		for _, pos := range positions {
-			if i == pos {
-				dCopy[i] = string(ltr)
-				continue
-			}
-		}
-	}
-	*d = display(dCopy)
-}
-
 func (g *Game) Update(guess rune) {
 	warning := validate(guess, g.guessedChars)
 	if len(warning) > 0 {
@@ -117,17 +93,6 @@ func (g *Game) Update(guess rune) {
 	}
 }
 
-func validate(guess rune, guessedLetters map[rune]struct{}) (warning string) {
-	nonLtrFilter := regexp.MustCompile(`[[:^alpha:]]`)
-	if guess == utf8.RuneError || len(nonLtrFilter.FindString(string(guess))) > 0 {
-		warning = errInvalidGuess
-	}
-	if _, ok := guessedLetters[guess]; ok {
-		warning = errLtrAlreadyGuessed
-	}
-	return
-}
-
 func (g *Game) IsOver() bool {
 	return g.winner != nil
 }
@@ -141,3 +106,40 @@ func (g *Game) Result() (s State) {
 	s.Message = fmt.Sprintf("You lose :(\n The word was %s", g.secret)
 	return
 }
+
+func validate(guess rune, guessedLetters map[rune]struct{}) (warning string) {
+	nonLtrFilter := regexp.MustCompile(`[[:^alpha:]]`)
+	if guess == utf8.RuneError || len(nonLtrFilter.FindString(string(guess))) > 0 {
+		warning = errInvalidGuess
+	}
+	if _, ok := guessedLetters[guess]; ok {
+		warning = errLtrAlreadyGuessed
+	}
+	return
+}
+
+type display []string
+
+func (d *display) init(length int) {
+	disp := []string{}
+	for i := 0; i < length; i++ {
+		disp = append(disp, "_")
+	}
+	*d = display(disp)
+}
+
+func (d *display) update(ltr rune, positions ...int) {
+	dCopy := []string{}
+	for i, ch := range *d {
+		dCopy = append(dCopy, string(ch))
+		for _, pos := range positions {
+			if i == pos {
+				dCopy[i] = string(ltr)
+				continue
+			}
+		}
+	}
+	*d = display(dCopy)
+}
+
+
