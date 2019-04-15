@@ -132,6 +132,39 @@ func TestUpdateValidChar(t *testing.T) {
 			t.Errorf("winner is %v", *g.winner)
 		}
 	})
+
+	t.Run("Guess that's already been made", func(t *testing.T) {
+		maxGuesses := 6
+		g, err := Setup("hello", maxGuesses)
+		if err != nil {
+			t.Fatalf("Setup returned %s", err.Error())
+		}
+		g.Update('s')
+		g.Update('s')
+
+		if g.message != errLtrAlreadyGuessed {
+			t.Errorf("g.message is %s", g.message)
+		}
+
+		expectedGuessedChars := map[rune]struct{}{'s': struct{}{}}
+		for ch, _ := range g.guessedChars {
+			if _, ok := expectedGuessedChars[ch]; !ok {
+				t.Errorf("%c not found in g.guessedChars", ch)
+			}
+		}
+		expectedDisplay := []string{"_", "_", "_", "_", "_"}
+		if strings.Join(expectedDisplay, "") != strings.Join(g.disp, "") {
+			t.Errorf("g.disp is %v", g.disp)
+		}
+		expectedRemainingGuesses := maxGuesses - 1
+		if g.remainingGuesses != expectedRemainingGuesses {
+			t.Errorf("g.remainingGuesses is %v", g.remainingGuesses)
+		}
+		if g.winner != nilPlayer {
+			t.Errorf("winner is %v", *g.winner)
+		}
+
+	})
 }
 
 func TestUpdateInvalidChar(t *testing.T) {
@@ -145,7 +178,7 @@ func TestUpdateInvalidChar(t *testing.T) {
 	if strings.Join(expectedDisplay, "") != strings.Join(g.disp, "") {
 		t.Errorf("g.disp is %v", g.disp)
 	}
-	if g.message != "Invalid input. Please enter a letter." {
+	if g.message != errInvalidGuess {
 		t.Errorf("g.message is %s", g.message)
 	}
 	if len(g.guessedChars) > 0 {

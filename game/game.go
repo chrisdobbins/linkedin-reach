@@ -13,6 +13,9 @@ type Player int
 const (
 	User Player = iota + 1
 	Computer
+	errInvalidGuess          = "Invalid input.\nPlease enter a letter."
+	errInvalidMaxGuessesTmpl = "unable to set up game with %d guesses"
+	errLtrAlreadyGuessed     = "Letter already guessed.\nPlease try again."
 )
 
 type Game struct {
@@ -48,7 +51,7 @@ func (g *Game) Progress() State {
 
 func Setup(secretWord string, guesses int) (*Game, error) {
 	if guesses <= 0 {
-		return &Game{}, fmt.Errorf("unable to set up game with %d guesses", guesses)
+		return &Game{}, fmt.Errorf(errInvalidMaxGuessesTmpl, guesses)
 	}
 	d := &display{}
 	d.init(len(secretWord))
@@ -117,10 +120,10 @@ func (g *Game) Update(guess rune) {
 func validate(guess rune, guessedLetters map[rune]struct{}) (warning string) {
 	nonLtrFilter := regexp.MustCompile(`[[:^alpha:]]`)
 	if guess == utf8.RuneError || len(nonLtrFilter.FindString(string(guess))) > 0 {
-		warning = "Invalid input. Please enter a letter."
+		warning = errInvalidGuess
 	}
 	if _, ok := guessedLetters[guess]; ok {
-		warning = "Letter already guessed. Please try again."
+		warning = errLtrAlreadyGuessed
 	}
 	return
 }

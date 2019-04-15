@@ -7,7 +7,12 @@ import (
 	"math/rand"
 	"net/http"
 	"strings"
+	"time"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 type Dict []string
 
