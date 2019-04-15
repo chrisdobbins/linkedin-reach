@@ -27,7 +27,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "installing game"
-wget https://github.com/chrisdobbins/linkedin-reach/releases/download/v1.0/game-linux-arm
+wget https://github.com/chrisdobbins/linkedin-reach/releases/download/v1.1.2/game-linux-arm
 if [ $? -ne 0 ]; then
         echo "game installation failed"
         exit 1

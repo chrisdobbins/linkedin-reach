@@ -7,11 +7,11 @@ before_deploy:
 - env GOOS="darwin" GOARCH="amd64" go build -o game-darwin-amd64 .
 - env GOOS="windows" GOARCH="amd64" go build -o game-windows-amd64.exe .
 - env GOOS="linux" GOARCH="arm" go build -o game-linux-arm .
+- if [$
 - env GOOS="linux" GOARCH="amd64" go build -o game-linux-amd64 .
 - go mod vendor
 deploy:
 - provider: heroku
-  script: env HEROKU=true
   api_key:
     secure: rMGJiXPN11xw9ZaZlqP66kS5WDQF1FcrsDrBu3qQK6PqxFSpp3ukwejaYte21pMug4tcgq8DPIu31RO8uXcEJGo6rnkPodZdxuxBepBGxaHuNaSuBcO753msPXEb06tnntdGMIMoHvqPu13g9ENPx6O58Fh/hvMa2DXBsVkZyD5WgwR8uEHjSNiJ+dDZQoKQQFV9Ns8myzfsimoQrfyzovu6QZWywYMJnZ6K/DNQJ/ilciZYaQl+pGRy+Ma4yb5u07qf31ocqi6HXaaB7AQOL5BjULbhGbH/qS6NAWOenIGUi0lmN+tp9d+IDYglMk7u00FwKLYcwlwPXN+sTapmBF/WTGErOkiQm/uIPftWv+MOum81yxpWPqQ2t/w/46iWmLP77kpInOqL1p6485q82XH0DKtQS/4NaHgbdg0MOZvp16acIEQndlZ75Pi9D4rdr8+bM8jSgkjvzdd4ykcAnPJRpTyKYm0lbzf4vjh7gj+qT+5XhtLSYjzi2QEYQ+I4fkF9quLrPSqXUbbl29tEVrQGyllh2+wAY5jA+xDkk34ARIdxHmTUTrOZompxTnwByJfVSPeUix1PWGwtr9WHdvUfKmg4tceYCP//AoKe4e4l5ZqVWkWk1Qe0ihyKiMIbsBfIsQTn7ounGzEN2VuihLXLqEAKfLHupZBpRe3fpCA=
   app: limitless-bastion-18713

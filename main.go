@@ -4,9 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"math/rand"
 	"os"
-	"time"
 
 	"github.com/chrisdobbins/linkedin-reach/cli"
 	"github.com/chrisdobbins/linkedin-reach/dictionary"
@@ -38,8 +36,6 @@ var (
 )
 
 func init() {
-	rand.Seed(time.Now().UnixNano())
-
 	flag.Usage = func() { fmt.Fprintf(os.Stderr, fmt.Sprintf(help, defaultMaxAttempts)) }
 	flag.IntVar(&maxAttempts, "guesses", defaultMaxAttempts, guessesUsage)
 	flag.BoolVar(&shouldServe, "serve", false, "whether to start web version of game")
@@ -59,7 +55,7 @@ func main() {
 	flag.Parse()
 	if &maxAttempts == nil || maxAttempts == 0 {
 		maxAttempts = defaultMaxAttempts
-        }
+	}
 	if shouldServe {
 		server.Serve(port, gameDictionary, maxAttempts)
 		return

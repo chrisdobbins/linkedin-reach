@@ -5,8 +5,8 @@ import (
 	"sort"
 	"strings"
 
-	gm "github.com/chrisdobbins/linkedin-reach/game"
 	tm "github.com/buger/goterm"
+	gm "github.com/chrisdobbins/linkedin-reach/game"
 )
 
 type Display struct {
@@ -18,7 +18,7 @@ type Display struct {
 func (d Display) Write() {
 	tm.Clear()
 	tm.MoveCursor(1, 1)
-	box := tm.NewBox(60|tm.PCT, 10, 0)
+	box := tm.NewBox(tm.Width(), 10, 0)
 	box.Write(d.format())
 	tm.Print(box.String())
 	tm.MoveCursor(3, 9)
@@ -45,7 +45,7 @@ func transform(state gm.State) (d Display) {
 	pluralizer := "es"
 	prompt := []byte("Guess a letter: ")
 	d.Messages = [][]byte{}
-	d.Secret = []byte(strings.Join(state.Secret, ""))
+	d.Secret = []byte(strings.Join(state.Secret, "  "))
 	d.GuessedChars = []byte{}
 	for _, ch := range state.GuessedChars {
 		d.GuessedChars = append(d.GuessedChars, byte(ch))
