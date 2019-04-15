@@ -84,7 +84,7 @@ func playGame(w http.ResponseWriter, r *http.Request) {
 }
 
 func page(w http.ResponseWriter, r *http.Request) {
-	tmpl.Execute(w, "wss://"+r.Host+"/play")
+	tmpl.Execute(w, "ws://"+r.Host+"/play")
 }
 
 func getWord() (string, error) {
