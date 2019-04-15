@@ -16,14 +16,8 @@ func init() {
 
 type Dict []string
 
-type dictionaryGetter struct{}
-
 type WordCriteria struct {
 	MaxUniqueChars int
-}
-
-type getter interface {
-	get() ([]string, error)
 }
 
 func New() (Dict, error) {
@@ -67,6 +61,12 @@ func (d *Dict) populate(g getter) error {
 	*d = Dict(newDict)
 	return nil
 }
+
+type getter interface {
+	get() ([]string, error)
+}
+
+type dictionaryGetter struct{}
 
 func (d dictionaryGetter) get() ([]string, error) {
 	errorTemplate := "unable to retrieve word list: %s"
