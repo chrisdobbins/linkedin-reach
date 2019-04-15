@@ -32,11 +32,7 @@ var (
 	wordToGuess    string
 	helpFlag       bool
 	maxAttempts    int
-<<<<<<< HEAD
 	port           string
-=======
-	port   string
->>>>>>> .
 	shouldServe    bool
 	gameDictionary *dictionary.Dict
 )
@@ -47,24 +43,11 @@ func init() {
 	flag.Usage = func() { fmt.Fprintf(os.Stderr, fmt.Sprintf(help, defaultMaxAttempts)) }
 	flag.IntVar(&maxAttempts, "guesses", defaultMaxAttempts, guessesUsage)
 	flag.BoolVar(&shouldServe, "serve", false, "whether to start web version of game")
-<<<<<<< HEAD
-<<<<<<< HEAD
 	port = "8080"
 	if os.Getenv("PORT") != "" {
 		shouldServe = true
 		port = os.Getenv("PORT")
 	}
-=======
-	port = "localhost:8080"
-=======
-	port = "8080"
->>>>>>> .
-        if os.Getenv("GAE_SERVICE") != "" {
-           shouldServe = true
-           port = os.Getenv("PORT")
-        }
->>>>>>> .
-
 	newDict, err := dictionary.New()
 	if err != nil {
 		log.Fatal(err)
@@ -74,38 +57,9 @@ func init() {
 
 func main() {
 	flag.Parse()
-<<<<<<< HEAD
 	if &maxAttempts == nil {
 		maxAttempts = defaultMaxAttempts
-=======
-	var uiDisplay ui.Display
-	if shouldServe {
-		server.Serve(port, gameDictionary, defaultMaxAttempts)
-	} else { // debug else statement
-		var err error
-		wordCriteria := dictionary.WordCriteria{
-			MaxUniqueChars: maxAttempts,
-		}
-		wordToGuess, err := gameDictionary.GetOne(wordCriteria)
-		if err != nil {
-			log.Fatal(err)
-		}
-		game, err := gm.Setup(wordToGuess, maxAttempts)
-		if err != nil {
-			log.Fatalf("unable to set up game: %s", err.Error())
-		}
-		for !game.IsOver() {
-			uiDisplay = transform(game.Progress())
-			uiDisplay.Write()
-			reader := bufio.NewReader(os.Stdin)
-			guess, _, _ := reader.ReadRune()
-			game.Update(guess)
-		}
-
-		uiDisplay = transform(game.Result())
-		uiDisplay.Write()
->>>>>>> .
-	}
+        }
 	if shouldServe {
 		server.Serve(port, gameDictionary, maxAttempts)
 		return

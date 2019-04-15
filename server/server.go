@@ -20,17 +20,6 @@ var (
 	gameDictionary *dictionary.Dict
 )
 
-<<<<<<< HEAD
-=======
-func getWord() (string, error) {
-	wordToGuess, err := gameDictionary.GetOne(dictionary.WordCriteria{MaxUniqueChars: maxAttempts})
-	if err != nil {
-		return "", fmt.Errorf("getWord: %s", err.Error())
-	}
-	return wordToGuess, nil
-}
-
->>>>>>> .
 func Serve(port string, d *dictionary.Dict, maxGuesses int) {
 	maxAttempts = maxGuesses
 	if d == nil {
@@ -39,11 +28,7 @@ func Serve(port string, d *dictionary.Dict, maxGuesses int) {
 	gameDictionary = d
 	http.HandleFunc("/play", playGame)
 	http.HandleFunc("/", page)
-<<<<<<< HEAD
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), nil))
-=======
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s",port), nil))
->>>>>>> .
 }
 
 func playGame(w http.ResponseWriter, r *http.Request) {
