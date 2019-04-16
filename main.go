@@ -40,6 +40,7 @@ func init() {
 	flag.IntVar(&maxAttempts, "guesses", defaultMaxAttempts, guessesUsage)
 	flag.BoolVar(&shouldServe, "serve", false, "whether to start web version of game")
 	port = "8080"
+        // primarily meant for Heroku, which automatically sets this env var
 	if os.Getenv("PORT") != "" {
 		shouldServe = true
 		port = os.Getenv("PORT")
@@ -53,7 +54,7 @@ func init() {
 
 func main() {
 	flag.Parse()
-	if &maxAttempts == nil || maxAttempts == 0 {
+	if &maxAttempts == nil || maxAttempts <= 0 {
 		maxAttempts = defaultMaxAttempts
 	}
 	if shouldServe {
